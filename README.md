@@ -2,6 +2,8 @@
 
 Python instant-runoff voting system inspired by [HackSocNotts/voting](https://github.com/HackSocNotts/voting).
 
+**IMPORTANT:** Yes, instant-runoff voting is the single-winner equivalent of single transferable vote. NO MORE QUESTIONS ON THIS MATTER
+
 ## Services
 
 | Port  | Service      |
