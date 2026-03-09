@@ -10,8 +10,6 @@ services:
       REG_DB_PASSWORD:    ${REG_DB_PASSWORD}
       BALLOT_DB_PASSWORD: ${BALLOT_DB_PASSWORD}
       TALLY_DB_PASSWORD:  ${TALLY_DB_PASSWORD}
-    ports:
-      - "5433:5432"
     volumes:
       - ./db/initdb.d:/docker-entrypoint-initdb.d:ro
       - pgdata:/var/lib/postgresql/data
@@ -28,8 +26,6 @@ services:
       context: ./services/registration
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "10000:8000"
     environment:
       DATABASE_URL: postgresql://registration_svc:${REG_DB_PASSWORD}@db:5432/election
       TOKEN_SECRET: ${TOKEN_SECRET}
@@ -45,8 +41,6 @@ services:
       context: ./services/ballot
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "10002:8000"
     environment:
       DATABASE_URL: postgresql://ballot_svc:${BALLOT_DB_PASSWORD}@db:5432/election
       TOKEN_SECRET: ${TOKEN_SECRET}
@@ -62,8 +56,6 @@ services:
       context: ./services/tally
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "10003:8000"
     environment:
       DATABASE_URL: postgresql://tally_svc:${TALLY_DB_PASSWORD}@db:5432/election
       ADMIN_SECRET: ${ADMIN_SECRET}
