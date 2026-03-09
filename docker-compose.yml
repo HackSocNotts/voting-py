@@ -1,0 +1,82 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:        election
+      POSTGRES_USER:      postgres
+      POSTGRES_PASSWORD:  ${POSTGRES_SUPERUSER_PASSWORD}
+      REG_DB_PASSWORD:    ${REG_DB_PASSWORD}
+      BALLOT_DB_PASSWORD: ${BALLOT_DB_PASSWORD}
+      TALLY_DB_PASSWORD:  ${TALLY_DB_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./db/initdb.d:/docker-entrypoint-initdb.d:ro
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d election"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  registration:
+    build:
+      context: ./services/registration
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "10000:8000"
+    environment:
+      DATABASE_URL: postgresql://registration_svc:${REG_DB_PASSWORD}@db:5432/election
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      ADMIN_SECRET: ${ADMIN_SECRET}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ballot:
+    build:
+      context: ./services/ballot
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "10002:8000"
+    environment:
+      DATABASE_URL: postgresql://ballot_svc:${BALLOT_DB_PASSWORD}@db:5432/election
+      TOKEN_SECRET: ${TOKEN_SECRET}
+      ELECTION_BASE_URL: https://voting.hacksoc.net/ballot/
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+
+  tally:
+    build:
+      context: ./services/tally
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "10003:8000"
+    environment:
+      DATABASE_URL: postgresql://tally_svc:${TALLY_DB_PASSWORD}@db:5432/election
+      ADMIN_SECRET: ${ADMIN_SECRET}
+      TOKEN_SECRET: ${TOKEN_SECRET}
+    networks:
+      - internal
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:
