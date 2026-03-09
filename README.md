@@ -6,15 +6,10 @@ Python instant-runoff voting system inspired by [HackSocNotts/voting](https://gi
 
 ## Services
 
-| Port  | Service      |
-|-------|--------------|
-| 10000 | Registration |
-| 10001 | Ballot       |
-| 10002 | Tally/Admin  |
-
-- FastAPI services backed by PostgreSQL 
-- Each service has its own DB role with only the permissions it needs 
-	- for example, the tally service cannot write ballots, the ballot service cannot touch members.
+- Registration, Ballot, Tally (admin)
+	- FastAPI services backed by PostgreSQL (each run on :8000 of their own service, in their own container)
+	- Each service has its own DB role with only the permissions it needs 
+		- for example, the tally service cannot write ballots, the ballot service cannot touch members.
 - Should be reverse proxied behind /register, /ballot, and /admin
 	- /admin should probably also have a basic auth thru the reverse proxy, but you'd still need the admin token to make any changes once passing that
     - You can hash a password for this use using `caddy hash-password --plaintext <password_here>` 
